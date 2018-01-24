@@ -254,4 +254,29 @@ void Destroy(Node<T> *root)
 	delete root;
 }
 
+// methods to test the correctness of the tree
+// updates heights as it moves along
+// returns true if heights are correct
+template <typename T>
+bool AreHeightsCorrect(Node<T> *root)
+{
+	bool correct = true;
+	if (root->left) correct = correct && IsTreeBalanced(root->left);
+	if (root->right) correct = correct && IsTreeBalanced(root->right);
+	size_t height = root->height;
+	util::update_height(root);
+	return (height == root->height && correct);
+}
+
+// returns true if balanced false o.w.
+template <typename T>
+bool IsTreeBalanced(Node<T> *root)
+{
+	bool balanced = true;
+	if (root->left) balanced = balanced && IsTreeBalanced(root->left);
+	if (root->right) balanced = balanced && IsTreeBalanced(root->right);
+	int bf = util::get_balance_factor(root);
+	return (bf <= 1 && bf >= -1 && balanced);
+}
+
 } // namespace part2
