@@ -2,7 +2,7 @@
 * @Author: karl
 * @Date:   2018-01-22 20:44:10
 * @Last Modified by:   karl
-* @Last Modified time: 2018-01-29 22:20:08
+* @Last Modified time: 2018-01-29 23:15:18
 */
 
 #include "part1/AVL.hh"
@@ -100,6 +100,7 @@ vector<string> split_string(const string &str, char delim = ' ')
 
 int main()
 {
+	/*
 	part1::Node<int> *root = nullptr;
 	string u_input = {};
 	vector<string> arr {};
@@ -119,6 +120,33 @@ int main()
 			}
 		} else if (arr.front() == "q" || arr.front() == "Q") {
 			part1::Destroy(root);
+			return 0;
+		} else if (arr.front() == "d" || arr.front() == "D") {
+			display_tree(root);
+		} else {
+			cout << "Unkown option " << arr.front() << '\n';
+		}
+	}
+	*/
+	part2::Node<int> *root = nullptr;
+	string u_input = {};
+	vector<string> arr {};
+	for (;;) {
+		getline(cin, u_input);
+		arr = split_string(u_input);
+		if (!arr.size()) continue;
+		if (arr.front() == "i" || arr.front() == "I") {
+			for (size_t i = 1; i < arr.size(); ++i) {
+				root = part2::Insert(root, stoi(arr[i]));
+			}
+		} else if (arr.front() == "e" || arr.front() == "E") {
+			for (size_t i = 1; i < arr.size(); ++i) {
+				auto valid = part2::Find(root, stoi(arr[i]));
+				if (!valid) cout << "Value " << stoi(arr[i]) << " was not found\n";
+				else root = part2::Erase(valid);
+			}
+		} else if (arr.front() == "q" || arr.front() == "Q") {
+			part2::Destroy(root);
 			return 0;
 		} else if (arr.front() == "d" || arr.front() == "D") {
 			display_tree(root);

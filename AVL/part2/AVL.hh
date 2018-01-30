@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <iostream>
 
 namespace part2 {
 
@@ -100,6 +101,17 @@ Node<T> **pointer_to_node(Node<T> *node)
 	Node<T> *parent = node->parent;
 	if (parent->left == node) return &(parent->left);
 	else return &(parent->right);
+} 
+
+template <typename T>
+void delete_replacement(Node<T> **replacement, Node<T> *dangling_branch)
+{
+	Node<T> **node_ptr = util::pointer_to_node(*replacement);
+	Node<T> *parent = (*replacement)->parent;
+	(*node_ptr) = dangling_branch;
+	if (dangling_branch) dangling_branch->parent = parent;
+	delete (*replacement);
+	*replacement = parent;
 }
 
 } // namespace util
@@ -132,10 +144,13 @@ void PreOrderTraversal(Node<T> *root, Container &container)
 }
 
 template <typename T>
-Node<T> *Insert(Node<T> *root, typename Node<T>::value_type val) noexcept
+Node<T> *Insert(Node<T> *root, typename Node<T>::value_type val) 
 {
 	// create a new node to insert into the tree
 	Node<T> *new_node = new Node<T>(val);
+
+	// if root is null the new node becomes the root node
+	if (!root) return new_node;
 
 	// find out where to put the new node
 	// keep track of the route moved into the tree
@@ -195,6 +210,8 @@ static void replace_node(Node<T> *target, Node<T> *walk, Node<T> *tail)
 	walk = parent;
 }
 
+
+
 template <typename T>
 Node<T> *Erase(Node<T> *target) noexcept
 {
@@ -207,30 +224,20 @@ Node<T> *Erase(Node<T> *target) noexcept
 		}
 		// replace the value and then delete replacement node
 		target->value = walk->value;
-		Node<T> **node_ptr = util::pointer_to_node(walk);
-		Node<T> *parent = walk->parent;
-		(*node_ptr) = walk->left;
-		if (walk->left) walk->left->parent = parent;
-		delete walk;
-		walk = parent;
+		delete_replacement(&walk, walk->left);
 	} else if (target->right) {
 		walk = target->right;
 		while (walk->left) 
 			walk = walk->left;
 		target->value = walk->value;
-		Node<T> **node_ptr = util::pointer_to_node(walk);
-		Node<T> *parent = walk->parent;
-		(*node_ptr) = walk->right;
-		if (walk->right) walk->right->parent = parent;
-		delete walk;
-		walk = parent;
+		delete_replacement(&walk, walk->right);
+	} else if (!target->parent) {
+		// if the tree is just the single node, return null
+		delete target;
+		return nullptr;
 	} else {
 		walk = target;
-		Node<T> **node_ptr = util::pointer_to_node(walk);
-		Node<T> *parent = walk->parent;
-		(*node_ptr) = nullptr;
-		delete walk;
-		walk = parent;
+		delete_replacement(&walk, (Node<T> *)nullptr);
 	}
 
 	// update the new heights, applying rotations if necessary

@@ -1,6 +1,5 @@
 #pragma once
 #include <cstddef> // for size_t
-#include <iostream>
 
 namespace part1 {
 
@@ -188,7 +187,7 @@ Node<T> *Find(Node<T> *root, typename Node<T>::value_type val)
 template <typename T>
 Node<T> *Erase(Node<T> *root, typename Node<T>::value_type val)
 {
-	if (!root) return nullptr;
+	if (!root) return root;
 	Node<T> **parents[root->height + 1];
 	size_t parents_index = 0;
 
@@ -200,10 +199,11 @@ Node<T> *Erase(Node<T> *root, typename Node<T>::value_type val)
 		if (val > (*indirect)->value) indirect = &(*indirect)->right;
 		else indirect = &(*indirect)->left;
 	}
-	if (!(*indirect)) return nullptr;
+	if (!(*indirect)) return root;
 
 	// find a replacement 
 	if ((*indirect)->left) {
+		// need to check this node for imbalance as well
 		parents[parents_index++] = indirect;
 		Node<T> **walk = &(*indirect)->left;
 		while ((*walk)->right) {
@@ -216,8 +216,8 @@ Node<T> *Erase(Node<T> *root, typename Node<T>::value_type val)
 		*walk = (*walk)->left;
 		delete tmp;
 	} else if ((*indirect)->right) {
-		parents[parents_index++] = indirect;
 		// look at the right child if the left doesn't exist
+		parents[parents_index++] = indirect;
 		Node<T> **walk = &(*indirect)->right;
 		while ((*walk)->left) {
 			parents[parents_index++] = walk;
@@ -233,7 +233,6 @@ Node<T> *Erase(Node<T> *root, typename Node<T>::value_type val)
 		delete tmp;
 		*indirect = nullptr;
 	}
-	std::cout << parents_index << "\n";
 	// update the new heights, applying rotations if necessary
 	for (size_t i = 0; i < parents_index; ++i) {
 		util::check_for_rotations(parents[parents_index - 1 - i]);

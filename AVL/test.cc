@@ -11,26 +11,27 @@ using namespace std;
 
 TEST_CASE("Part1 Tree methods", "[AVL]") {
 	using namespace part1;
-	auto root = new Node<int>(0);
+
+	SECTION("Empty Insertion") {
+		Node<int> *single = Insert<int>(nullptr, 0);
+		REQUIRE(single->value == 0);
+		REQUIRE(single->height == 0);
+		REQUIRE(single->left == nullptr);
+		REQUIRE(single->right == nullptr);
+	}
+
+	Node<int> *root = nullptr;
 	for (size_t i = 0; i < 50; ++i) 
 		for (int j = -90; j <= 90; ++j) 
 			root = Insert(root, j);
 
-	SECTION("Empty Insertion") {
-		Node<int> *root = Insert<int>(nullptr, 0);
-		REQUIRE(root->value == 0);
-		REQUIRE(root->height == 0);
-		REQUIRE(root->left == nullptr);
-		REQUIRE(root->right == nullptr);
-	}
-
 	SECTION("Tree size") {
-		REQUIRE(CountNodes(root) == 9051);
+		REQUIRE(CountNodes(root) == 9050);
 	}
 
 	SECTION("Insertion") {
-		vector<int> vec {0};
-		vec.reserve(9051);
+		vector<int> vec {};
+		vec.reserve(9050);
 		for (size_t i = 0; i < 50; ++i) 
 			for (int j = -90; j <= 90; ++j) 
 				vec.push_back(j);
@@ -50,8 +51,8 @@ TEST_CASE("Part1 Tree methods", "[AVL]") {
 			root = Erase(root, j);
 
 	SECTION("Deletion") {
-		vector<int> vec {0};
-		vec.reserve(4526);
+		vector<int> vec {};
+		vec.reserve(4525);
 		for (size_t i = 0; i < 25; ++i) 
 			for (int j = -90; j <= 90; ++j) 
 				vec.push_back(j);
@@ -65,32 +66,43 @@ TEST_CASE("Part1 Tree methods", "[AVL]") {
 		REQUIRE(AreHeightsCorrect(root));
 		REQUIRE(IsTreeBalanced(root));
 	}
+
+	for (size_t i = 0; i < 25; ++i) {
+		for (int j = -90; j <= 90; ++j) {
+			root = Erase(root, j);
+		}
+	}
+
+	SECTION("Delete the rest") {
+		REQUIRE(root == nullptr);
+	}
 }
 
 TEST_CASE("Part2 Tree methods", "[AVL]") {
 	using namespace part2;
 
 	SECTION("Empty Insertion") {
-		Node<int> *root = Insert<int>(nullptr, 0);
-		REQUIRE(root->value == 0);
-		REQUIRE(root->height == 0);
-		REQUIRE(root->left == nullptr);
-		REQUIRE(root->right == nullptr);
-		REQUIRE(root->parent == nullptr);
+		Node<int> *single = Insert<int>(nullptr, 0);
+		REQUIRE(single->value == 0);
+		REQUIRE(single->height == 0);
+		REQUIRE(single->left == nullptr);
+		REQUIRE(single->right == nullptr);
+		REQUIRE(single->parent == nullptr);
+		Destroy(single);
 	}
 
-	auto root = new Node<int>(0);
+	Node<int> *root = nullptr;
 	for (size_t i = 0; i < 50; ++i) 
 		for (int j = -90; j <= 90; ++j) 
 			root = Insert(root, j);
 
 	SECTION("Tree size") {
-		REQUIRE(CountNodes(root) == 9051);
+		REQUIRE(CountNodes(root) == 9050);
 	}
 
 	SECTION("Insertion") {
-		vector<int> vec {0};
-		vec.reserve(9051);
+		vector<int> vec {};
+		vec.reserve(9050);
 		for (size_t i = 0; i < 50; ++i) 
 			for (int j = -90; j <= 90; ++j) 
 				vec.push_back(j);
@@ -113,8 +125,8 @@ TEST_CASE("Part2 Tree methods", "[AVL]") {
 	}
 
 	SECTION("Deletion") {
-		vector<int> vec {0};
-		vec.reserve(4526);
+		vector<int> vec {};
+		vec.reserve(4525);
 		for (size_t i = 0; i < 25; ++i) 
 			for (int j = -90; j <= 90; ++j) 
 				vec.push_back(j);
@@ -127,5 +139,16 @@ TEST_CASE("Part2 Tree methods", "[AVL]") {
 	SECTION("Tree is balanced after deletions") {
 		REQUIRE(AreHeightsCorrect(root));
 		REQUIRE(IsTreeBalanced(root));
+	}
+
+	for (size_t i = 0; i < 25; ++i) {
+		for (int j = -90; j <= 90; ++j) {
+			auto node = Find(root, j);
+			root = Erase(node);
+		}
+	}
+
+	SECTION("Delete the rest") {
+		REQUIRE(root == nullptr);
 	}
 }
