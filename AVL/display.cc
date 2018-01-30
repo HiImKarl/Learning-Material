@@ -2,7 +2,7 @@
 * @Author: karl
 * @Date:   2018-01-22 20:44:10
 * @Last Modified by:   karl
-* @Last Modified time: 2018-01-22 21:35:42
+* @Last Modified time: 2018-01-29 22:20:08
 */
 
 #include "part1/AVL.hh"
@@ -11,6 +11,7 @@
 #include <cmath>
 #include <algorithm>
 #include <iostream>
+#include <vector>
 
 #ifdef __linux__
 #include <unistd.h>
@@ -45,12 +46,18 @@ void display_tree(Node *root)
 
     // makes sure terminal_cols is a power of two for better displaying
     terminal_cols = (size_t)pow(2, (size_t)log2(terminal_cols));
+    std::cout << string(terminal_cols, '-') << '\n';
+    if (!root) {
+    	cout << string(terminal_cols / 2, ' ') << "No tree\n";
+    	std::cout << string(terminal_cols, '-') << '\n';
+    	return;
+    }
+
 	size_t tree_height = root->height + 1;
 	size_t max_height = min((size_t)log2(terminal_cols), tree_height);
 	queue<decltype(root)> tree_row {};
 	tree_row.push(root);
 
-	cout << string(terminal_cols, '-') << '\n';
 	for (size_t i = 0; i < max_height; ++i) {
 		size_t num_nodes = pow(2, i);
 		int block_len = terminal_cols / (num_nodes * 2);
@@ -73,22 +80,51 @@ void display_tree(Node *root)
 	}
 	if (max_height > tree_height) 
 		cout << "(" << max_height - tree_height << " rows not shown...)" << '\n';
-	cout << string(terminal_cols, '-') << '\n';
+    std::cout << string(terminal_cols, '-') << '\n';
 }
 
-#include <vector>
+
+vector<string> split_string(const string &str, char delim = ' ')
+{
+	size_t prev = 0;
+	vector<string> arr {};
+	for (size_t i = 1; i < str.size(); ++i) {
+		if (str[i] == delim && prev != i) {
+			arr.push_back(str.substr(prev, i - prev));
+			prev = i + 1;
+		}
+	}
+	if (prev != str.size()) arr.push_back(str.substr(prev));
+	return arr;
+}
 
 int main()
 {
-	auto root = new part2::Node<int>(0);
-	for (int i = 15; i >= -15; --i) root = part2::Insert(root, i);
-	auto node = part2::Find(root, 0);
-	root = part2::Erase(node);
-	display_tree(root);
-	vector<int> vec {};
-	part2::PostOrderTraversal(root, vec);
-	for (int i : vec) cout << i << ' ';
-	cout << '\n';
-	part2::Destroy(root);
+	part1::Node<int> *root = nullptr;
+	string u_input = {};
+	vector<string> arr {};
+	for (;;) {
+		getline(cin, u_input);
+		arr = split_string(u_input);
+		if (!arr.size()) continue;
+		if (arr.front() == "i" || arr.front() == "I") {
+			for (size_t i = 1; i < arr.size(); ++i) {
+				root = part1::Insert(root, stoi(arr[i]));
+			}
+		} else if (arr.front() == "e" || arr.front() == "E") {
+			for (size_t i = 1; i < arr.size(); ++i) {
+				auto valid = part1::Find(root, stoi(arr[i]));
+				if (!valid) cout << "Value " << stoi(arr[i]) << " was not found\n";
+				else root = part1::Erase(root, stoi(arr[i]));
+			}
+		} else if (arr.front() == "q" || arr.front() == "Q") {
+			part1::Destroy(root);
+			return 0;
+		} else if (arr.front() == "d" || arr.front() == "D") {
+			display_tree(root);
+		} else {
+			cout << "Unkown option " << arr.front() << '\n';
+		}
+	}
 	return 0;
 }

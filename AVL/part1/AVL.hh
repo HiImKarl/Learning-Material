@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef> // for size_t
+#include <iostream>
 
 namespace part1 {
 
@@ -24,7 +25,7 @@ namespace util {
 // The balance factor is defined as Height(right child) - Height(left child)
 // We can think of the height of a non-existant child as -1
 template <typename T>
-int get_balance_factor(Node<T> *node) noexcept
+int get_balance_factor(Node<T> *node) 
 {
 	long left_height = (node->left ? node->left->height + 1 : 0);
 	long right_height = (node->right ? node->right->height + 1 : 0);
@@ -32,7 +33,7 @@ int get_balance_factor(Node<T> *node) noexcept
 }
 
 template <typename T>
-void update_height(Node<T> *node) noexcept
+void update_height(Node<T> *node) 
 {
 	size_t left_height = (node->left ? node->left->height + 1: 0);
 	size_t right_height = (node->right ? node->right->height + 1: 0);
@@ -40,18 +41,22 @@ void update_height(Node<T> *node) noexcept
 }
 
 template <typename T>
-void left_rotation(Node<T> **head) noexcept
+void left_rotation(Node<T> **head) 
 {
 	Node<T> *rotated = *head;
 	*head = (*head)->right;
 	rotated->right = (*head)->left;
 	(*head)->left = rotated;
+	
+	// update heights of the rotated nodes
+	// the children of the subtrees are unmoved so
+	// they do not need to be updated 
 	update_height(rotated);
 	update_height(*head);
 }
 
 template <typename T>
-void right_rotation(Node<T> **head) noexcept
+void right_rotation(Node<T> **head) 
 {
 	Node<T> *rotated = *head;
 	*head = (*head)->left;
@@ -63,7 +68,7 @@ void right_rotation(Node<T> **head) noexcept
 
 // Right rotate the right child and left rotate the parent
 template <typename T>
-void right_left_rotation(Node<T> **head) noexcept
+void right_left_rotation(Node<T> **head) 
 {
 	right_rotation(&(*head)->right);
 	left_rotation(head);
@@ -71,7 +76,7 @@ void right_left_rotation(Node<T> **head) noexcept
 
 // Left rotate the left child and right rotate the parent
 template <typename T>
-void left_right_rotation(Node<T> **head) noexcept
+void left_right_rotation(Node<T> **head) 
 {
 	left_rotation(&(*head)->left);
 	right_rotation(head);
@@ -130,6 +135,7 @@ Node<T> *Insert(Node<T> *root, typename Node<T>::value_type val)
 {
 	// create a new node to insert into the tree,
 	Node<T> *new_node = new Node<T>(val);
+	// if root is null the new node will become the root node
 	if (!root) return new_node;
 
 	// find out where to put the new node
@@ -168,9 +174,21 @@ size_t CountNodes(Node<T> *root)
 }
 
 template <typename T>
+Node<T> *Find(Node<T> *root, typename Node<T>::value_type val) 
+{
+	Node<T> *walk = root;
+	while (walk) {
+		if (val == walk->value) break;
+		if (val > walk->value) walk = walk->right;
+		else walk = walk->left;
+	}
+	return walk;
+}
+
+template <typename T>
 Node<T> *Erase(Node<T> *root, typename Node<T>::value_type val)
 {
-	if (!root) /* Throw an exception? */ return nullptr;
+	if (!root) return nullptr;
 	Node<T> **parents[root->height + 1];
 	size_t parents_index = 0;
 
@@ -182,12 +200,11 @@ Node<T> *Erase(Node<T> *root, typename Node<T>::value_type val)
 		if (val > (*indirect)->value) indirect = &(*indirect)->right;
 		else indirect = &(*indirect)->left;
 	}
-	if (!(*indirect)) return root; 
-	/* Throw an exception? */
+	if (!(*indirect)) return nullptr;
 
 	// find a replacement 
-	parents[parents_index++] = indirect;
 	if ((*indirect)->left) {
+		parents[parents_index++] = indirect;
 		Node<T> **walk = &(*indirect)->left;
 		while ((*walk)->right) {
 			parents[parents_index++] = walk;
@@ -199,6 +216,8 @@ Node<T> *Erase(Node<T> *root, typename Node<T>::value_type val)
 		*walk = (*walk)->left;
 		delete tmp;
 	} else if ((*indirect)->right) {
+		parents[parents_index++] = indirect;
+		// look at the right child if the left doesn't exist
 		Node<T> **walk = &(*indirect)->right;
 		while ((*walk)->left) {
 			parents[parents_index++] = walk;
@@ -209,11 +228,12 @@ Node<T> *Erase(Node<T> *root, typename Node<T>::value_type val)
 		*walk = (*walk)->right;
 		delete tmp;
 	} else {
+		// Otherwise, this is a leaf node
 		Node<T> *tmp = *indirect;
 		delete tmp;
 		*indirect = nullptr;
 	}
-
+	std::cout << parents_index << "\n";
 	// update the new heights, applying rotations if necessary
 	for (size_t i = 0; i < parents_index; ++i) {
 		util::check_for_rotations(parents[parents_index - 1 - i]);
@@ -222,7 +242,7 @@ Node<T> *Erase(Node<T> *root, typename Node<T>::value_type val)
 }
 
 template <typename T>
-void Destroy(Node<T> *root) noexcept
+void Destroy(Node<T> *root) 
 {
 	if (root->left) Destroy(root->left);
 	if (root->right) Destroy(root->right);
