@@ -94,7 +94,7 @@ void check_for_rotations(Node<T> **node_ptr)
 	}
 }
 
-// assuming node is not null
+// assuming node is not null and its parent exists
 template <typename T>
 Node<T> **pointer_to_node(Node<T> *node)
 {
@@ -170,16 +170,17 @@ Node<T> *Insert(Node<T> *root, typename Node<T>::value_type val)
 		new_node = new_node->parent;
 	}
 
+	// need to the deal with the root node seperately
 	indirect = &root;
 	util::check_for_rotations(indirect);
 	return root;
 }
 
 template <typename T>
-size_t Height(Node<T> *root) noexcept { return root->height; }
+size_t Height(Node<T> *root) { return root->height; }
 
 template <typename T>
-size_t CountNodes(Node<T> *root) noexcept
+size_t CountNodes(Node<T> *root) 
 {
 	if (!root) return 0;
 	size_t count = CountNodes(root->left);
@@ -188,7 +189,7 @@ size_t CountNodes(Node<T> *root) noexcept
 }
 
 template <typename T>
-Node<T> *Find(Node<T> *root, typename Node<T>::value_type val) noexcept
+Node<T> *Find(Node<T> *root, typename Node<T>::value_type val) 
 {
 	while (root) {
 		if (val == root->value) return root;
@@ -213,7 +214,7 @@ static void replace_node(Node<T> *target, Node<T> *walk, Node<T> *tail)
 
 
 template <typename T>
-Node<T> *Erase(Node<T> *target) noexcept
+Node<T> *Erase(Node<T> *target) 
 {
 	Node<T> *walk;
 	// find a replacement 
