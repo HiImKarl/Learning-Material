@@ -1,12 +1,53 @@
 #pragma once
 #include <cstddef>
-#include <iostream>
 
 namespace part2 {
 
+template <typename T> struct Node; // forward declare
+template <typename T>
+struct Iterator {
+	typedef T value_type;
+	Iterator(Node<T> *ptr)
+		: ptr(ptr) {}
+	Iterator &operator++();
+	Iterator &operator--();
+	Iterator operator++(int);
+	Iterator operator--(int);
+	value_type &operator*();
+	bool operator==(Iterator const &iterator);
+	bool operator!=(Iterator const &iterator) { return !(*this == iterator);}
+
+	// useful friend functions
+	template <typename Y>
+	friend inline void move_it_leftmost(Iterator<Y> *iterator)
+	{
+		while (iterator->ptr->left) iterator->ptr = iterator->ptr->left;
+	}
+	template <typename Y>
+	friend void inline move_it_rightmost(Iterator<Y> *iterator)
+	{
+		while (iterator->ptr->right) iterator->ptr = iterator->ptr->right;
+	}
+	template <typename Y>
+	friend bool iterator_is_left_child(Iterator<Y> *iterator)
+	{
+		if (iterator->ptr == iterator->ptr->parent->left) return true;
+		return false;
+	}
+private:
+	Node<T> *ptr;
+};
+
 template <typename T>
 struct Node {
-	typedef T value_type;
+	// Useful typedefs
+	typedef T        			value_type;
+	typedef T& 		 			reference;
+	typedef T&&      			rv_reference;
+	typedef T const& 			const_reference;
+	typedef Iterator<T> 		iterator;
+	typedef Iterator<T const>   const_iterator;
+
 	Node(value_type value)
 		: value(value), left(nullptr), right(nullptr), parent(nullptr), height(0) 
 		{}
@@ -116,6 +157,66 @@ void delete_replacement(Node<T> **replacement, Node<T> *dangling_branch)
 
 } // namespace util
 
+// Go to the next pointer
+template <typename T>
+Iterator<T> &Iterator<T>::operator++()
+{
+	// We can perform a check here for the end iterator (ptr is NULL)
+	// and throw an exception if found
+	if (ptr->right) {
+		ptr = ptr->right;
+		move_it_leftmost(this);
+	} else {
+		while (ptr->parent && !iterator_is_left_child(this)) ptr = ptr->parent;
+		ptr = ptr->parent;
+	}
+	return *this;
+}
+
+// do the opposite of ++
+template <typename T>
+Iterator<T> &Iterator<T>::operator--()
+{
+	// We can perform a check for the begin iterator (no left-child and is a left child)
+	// and throw an exception if found
+	if (ptr->left) {
+		ptr = ptr->left;
+		move_it_rightmost(this);
+	} else {
+		while (iterator_is_left_child(this)) ptr = ptr->parent;
+		ptr = ptr->parent;
+	}
+	return *this;
+}
+
+template <typename T>
+Iterator<T> Iterator<T>::operator++(int)
+{
+	Iterator<T> tmp = *this;
+	++*this;
+	return tmp;
+}
+
+template <typename T>
+Iterator<T> Iterator<T>::operator--(int)
+{
+	Iterator<T> tmp = *this;
+	--*this;
+	return tmp;
+}
+
+template <typename T>
+bool Iterator<T>::operator==(Iterator<T> const& iterator)
+{
+	return ptr == iterator.ptr;
+}
+
+template <typename T>
+typename Iterator<T>::value_type &Iterator<T>::operator*() 
+{ 
+	return ptr->value; 
+}
+
 template <typename T, typename Container>
 void PostOrderTraversal(Node<T> *root, Container &container)
 {
@@ -211,8 +312,6 @@ static void replace_node(Node<T> *target, Node<T> *walk, Node<T> *tail)
 	walk = parent;
 }
 
-
-
 template <typename T>
 Node<T> *Erase(Node<T> *target) 
 {
@@ -225,20 +324,20 @@ Node<T> *Erase(Node<T> *target)
 		}
 		// replace the value and then delete replacement node
 		target->value = walk->value;
-		delete_replacement(&walk, walk->left);
+		util::delete_replacement(&walk, walk->left);
 	} else if (target->right) {
 		walk = target->right;
 		while (walk->left) 
 			walk = walk->left;
 		target->value = walk->value;
-		delete_replacement(&walk, walk->right);
+		util::delete_replacement(&walk, walk->right);
 	} else if (!target->parent) {
 		// if the tree is just the single node, return null
 		delete target;
 		return nullptr;
 	} else {
 		walk = target;
-		delete_replacement(&walk, (Node<T> *)nullptr);
+		util::delete_replacement(&walk, (Node<T> *)nullptr);
 	}
 
 	// update the new heights, applying rotations if necessary
@@ -274,7 +373,7 @@ bool AreHeightsCorrect(Node<T> *root)
 	size_t height = root->height;
 	util::update_height(root);
 	return (height == root->height && correct);
-}
+} 
 
 // returns true if balanced false o.w.
 template <typename T>
@@ -285,6 +384,22 @@ bool IsTreeBalanced(Node<T> *root)
 	if (root->right) balanced = balanced && IsTreeBalanced(root->right);
 	int bf = util::get_balance_factor(root);
 	return (bf <= 1 && bf >= -1 && balanced);
+}
+
+// Get an iterator the beginning of the tree
+template <typename T>
+Iterator<T> Begin(Node<T> *root)
+{
+	Iterator<T> it {root};
+	move_it_leftmost(&it);
+	return it;
+}
+
+// Get the ending iterator, the parameter doesn't do anything
+template <typename T>
+Iterator<T> End(Node<T> *root)
+{
+	return Iterator<T> {nullptr};
 }
 
 } // namespace part2

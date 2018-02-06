@@ -10,145 +10,175 @@
 using namespace std;
 
 TEST_CASE("Part1 Tree methods", "[AVL]") {
-	using namespace part1;
+  using namespace part1;
 
-	SECTION("Empty Insertion") {
-		Node<int> *single = Insert<int>(nullptr, 0);
-		REQUIRE(single->value == 0);
-		REQUIRE(single->height == 0);
-		REQUIRE(single->left == nullptr);
-		REQUIRE(single->right == nullptr);
-	}
+  SECTION("Empty Insertion") {
+    Node<int> *single = Insert<int>(nullptr, 0);
+    REQUIRE(single->value == 0);
+    REQUIRE(single->height == 0);
+    REQUIRE(single->left == nullptr);
+    REQUIRE(single->right == nullptr);
+  }
 
-	Node<int> *root = nullptr;
-	for (size_t i = 0; i < 50; ++i) 
-		for (int j = -90; j <= 90; ++j) 
-			root = Insert(root, j);
+  Node<int> *root = nullptr;
+  for (size_t i = 0; i < 50; ++i) 
+    for (int j = -90; j <= 90; ++j) 
+      root = Insert(root, j);
 
-	SECTION("Tree size") {
-		REQUIRE(CountNodes(root) == 9050);
-	}
+  SECTION("Tree size") {
+    REQUIRE(CountNodes(root) == 9050);
+  }
 
-	SECTION("Insertion") {
-		vector<int> vec {};
-		vec.reserve(9050);
-		for (size_t i = 0; i < 50; ++i) 
-			for (int j = -90; j <= 90; ++j) 
-				vec.push_back(j);
-		std::sort(vec.begin(), vec.end());
-		vector<int> inorder_traversal {};
-		InOrderTraversal(root, inorder_traversal);
-		REQUIRE(vec == inorder_traversal);
-	}
+  SECTION("Insertion") {
+    vector<int> vec {};
+    vec.reserve(9050);
+    for (size_t i = 0; i < 50; ++i) 
+      for (int j = -90; j <= 90; ++j) 
+        vec.push_back(j);
+    std::sort(vec.begin(), vec.end());
+    vector<int> inorder_traversal {};
+    InOrderTraversal(root, inorder_traversal);
+    REQUIRE(vec == inorder_traversal);
+  }
 
-	SECTION("Tree is balanced after insertions") {
-		REQUIRE(AreHeightsCorrect(root));
-		REQUIRE(IsTreeBalanced(root));
-	}
+  SECTION("Tree is balanced after insertions") {
+    REQUIRE(AreHeightsCorrect(root));
+    REQUIRE(IsTreeBalanced(root));
+  }
 
-	for (size_t i = 0; i < 25; ++i) 
-		for (int j = -90; j <= 90; ++j)
-			root = Erase(root, j);
+  for (size_t i = 0; i < 25; ++i) 
+    for (int j = -90; j <= 90; ++j)
+      root = Erase(root, j);
 
-	SECTION("Deletion") {
-		vector<int> vec {};
-		vec.reserve(4525);
-		for (size_t i = 0; i < 25; ++i) 
-			for (int j = -90; j <= 90; ++j) 
-				vec.push_back(j);
-		std::sort(vec.begin(), vec.end());
-		vector<int> inorder_traversal {};
-		InOrderTraversal(root, inorder_traversal);
-		REQUIRE(vec == inorder_traversal);
-	}
+  SECTION("Deletion") {
+    vector<int> vec {};
+    vec.reserve(4525);
+    for (size_t i = 0; i < 25; ++i) 
+      for (int j = -90; j <= 90; ++j) 
+        vec.push_back(j);
+    std::sort(vec.begin(), vec.end());
+    vector<int> inorder_traversal {};
+    InOrderTraversal(root, inorder_traversal);
+    REQUIRE(vec == inorder_traversal);
+  }
 
-	SECTION("Tree is balanced after deletions") {
-		REQUIRE(AreHeightsCorrect(root));
-		REQUIRE(IsTreeBalanced(root));
-	}
+  SECTION("Tree is balanced after deletions") {
+    REQUIRE(AreHeightsCorrect(root));
+    REQUIRE(IsTreeBalanced(root));
+  }
 
-	for (size_t i = 0; i < 25; ++i) {
-		for (int j = -90; j <= 90; ++j) {
-			root = Erase(root, j);
-		}
-	}
+  for (size_t i = 0; i < 25; ++i) {
+    for (int j = -90; j <= 90; ++j) {
+      root = Erase(root, j);
+    }
+  }
 
-	SECTION("Delete the rest") {
-		REQUIRE(root == nullptr);
-	}
+  SECTION("Delete the rest") {
+    REQUIRE(root == nullptr);
+  }
 }
 
 TEST_CASE("Part2 Tree methods", "[AVL]") {
-	using namespace part2;
+  using namespace part2;
 
-	SECTION("Empty Insertion") {
-		Node<int> *single = Insert<int>(nullptr, 0);
-		REQUIRE(single->value == 0);
-		REQUIRE(single->height == 0);
-		REQUIRE(single->left == nullptr);
-		REQUIRE(single->right == nullptr);
-		REQUIRE(single->parent == nullptr);
-		Destroy(single);
-	}
+  SECTION("Empty Insertion") {
+    Node<int> *single = Insert<int>(nullptr, 0);
+    REQUIRE(single->value == 0);
+    REQUIRE(single->height == 0);
+    REQUIRE(single->left == nullptr);
+    REQUIRE(single->right == nullptr);
+    REQUIRE(single->parent == nullptr);
+    Destroy(single);
+  }
 
-	Node<int> *root = nullptr;
-	for (size_t i = 0; i < 50; ++i) 
-		for (int j = -90; j <= 90; ++j) 
-			root = Insert(root, j);
+  Node<int> *root = nullptr;
+  for (size_t i = 0; i < 50; ++i) 
+    for (int j = -90; j <= 90; ++j) 
+      root = Insert(root, j);
 
-	SECTION("Tree size") {
-		REQUIRE(CountNodes(root) == 9050);
-	}
+  SECTION("Tree size") {
+    REQUIRE(CountNodes(root) == 9050);
+  }
 
-	SECTION("Insertion") {
-		vector<int> vec {};
-		vec.reserve(9050);
-		for (size_t i = 0; i < 50; ++i) 
-			for (int j = -90; j <= 90; ++j) 
-				vec.push_back(j);
-		std::sort(vec.begin(), vec.end());
-		vector<int> inorder_traversal {};
-		InOrderTraversal(root, inorder_traversal);
-		REQUIRE(vec == inorder_traversal);
-	}
+  SECTION("Insertion") {
+    vector<int> vec {};
+    vec.reserve(9050);
+    for (size_t i = 0; i < 50; ++i) 
+      for (int j = -90; j <= 90; ++j) 
+        vec.push_back(j);
+    sort(vec.begin(), vec.end());
+    vector<int> inorder_traversal {};
+    InOrderTraversal(root, inorder_traversal);
+    REQUIRE(vec == inorder_traversal);
+  }
 
-	SECTION("Tree is balanced after insertions") {
-		REQUIRE(AreHeightsCorrect(root));
-		REQUIRE(IsTreeBalanced(root));
-	}
+  SECTION("Tree is balanced after insertions") {
+    REQUIRE(AreHeightsCorrect(root));
+    REQUIRE(IsTreeBalanced(root));
+  }
 
-	for (size_t i = 0; i < 25; ++i) {
-		for (int j = -90; j <= 90; ++j) {
-			auto node = Find(root, j);
-			root = Erase(node);
-		}
-	}
+  SECTION("Forwards Iterator works after Insertion") {
+    vector<int> vec {};
+    vec.reserve(9050);
+    for (size_t i = 0; i < 50; ++i) 
+      for (int j = -90; j <= 90; ++j) 
+        vec.push_back(j);
+    sort(vec.begin(), vec.end());
+    vector<int> forwards_iteration {};
+    forwards_iteration.reserve(9050);
+    for (auto it = Begin(root); it != End(root); ++it) {
+      forwards_iteration.push_back(*it);
+    }
+    REQUIRE(vec == forwards_iteration);
+  }
 
-	SECTION("Deletion") {
-		vector<int> vec {};
-		vec.reserve(4525);
-		for (size_t i = 0; i < 25; ++i) 
-			for (int j = -90; j <= 90; ++j) 
-				vec.push_back(j);
-		std::sort(vec.begin(), vec.end());
-		vector<int> inorder_traversal {};
-		InOrderTraversal(root, inorder_traversal);
-		REQUIRE(vec == inorder_traversal);
-	}
-	
-	SECTION("Tree is balanced after deletions") {
-		REQUIRE(AreHeightsCorrect(root));
-		REQUIRE(IsTreeBalanced(root));
-	}
+  for (size_t i = 0; i < 25; ++i) {
+    for (int j = -90; j <= 90; ++j) {
+      auto node = Find(root, j);
+      root = Erase(node);
+    }
+  }
 
-	for (size_t i = 0; i < 25; ++i) {
-		for (int j = -90; j <= 90; ++j) {
-			auto node = Find(root, j);
-			root = Erase(node);
-		}
-	}
+  SECTION("Deletion") {
+    vector<int> vec {};
+    vec.reserve(4525);
+    for (size_t i = 0; i < 25; ++i) 
+      for (int j = -90; j <= 90; ++j) 
+        vec.push_back(j);
+    std::sort(vec.begin(), vec.end());
+    vector<int> inorder_traversal {};
+    InOrderTraversal(root, inorder_traversal);
+    REQUIRE(vec == inorder_traversal);
+  }
+  
+  SECTION("Tree is balanced after deletions") {
+    REQUIRE(AreHeightsCorrect(root));
+    REQUIRE(IsTreeBalanced(root));
+  }
 
-	SECTION("Delete the rest") {
-		REQUIRE(root == nullptr);
-	}
+  SECTION("Forwards Iterator works after Deletion") {
+    vector<int> vec {};
+    vec.reserve(4525);
+    for (size_t i = 0; i < 25; ++i) 
+      for (int j = -90; j <= 90; ++j) 
+        vec.push_back(j);
+    sort(vec.begin(), vec.end());
+    vector<int> forwards_iteration {};
+    forwards_iteration.reserve(4525);
+    for (auto it = Begin(root); it != End(root); ++it) {
+      forwards_iteration.push_back(*it);
+    }
+    REQUIRE(vec == forwards_iteration);
+  }
+
+  for (size_t i = 0; i < 25; ++i) {
+    for (int j = -90; j <= 90; ++j) {
+      auto node = Find(root, j);
+      root = Erase(node);
+    }
+  }
+
+  SECTION("Delete the rest") {
+    REQUIRE(root == nullptr);
+  }
 }
