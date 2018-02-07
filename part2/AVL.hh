@@ -17,14 +17,14 @@ struct Iterator {
 	bool operator==(Iterator const &iterator);
 	bool operator!=(Iterator const &iterator) { return !(*this == iterator);}
 
-	// useful friend functions
+	// useful utility functions
 	template <typename Y>
 	friend inline void move_it_leftmost(Iterator<Y> *iterator)
 	{
 		while (iterator->ptr->left) iterator->ptr = iterator->ptr->left;
 	}
 	template <typename Y>
-	friend void inline move_it_rightmost(Iterator<Y> *iterator)
+	friend inline void move_it_rightmost(Iterator<Y> *iterator)
 	{
 		while (iterator->ptr->right) iterator->ptr = iterator->ptr->right;
 	}
@@ -39,14 +39,49 @@ private:
 };
 
 template <typename T>
+struct ReverseIterator {
+	typedef T value_type;
+	ReverseIterator(Node<T> *ptr)
+		: ptr(ptr) {}
+	ReverseIterator &operator++();
+	ReverseIterator &operator--();
+	ReverseIterator operator++(int);
+	ReverseIterator operator--(int);
+	value_type &operator*();
+	bool operator==(ReverseIterator const &iterator);
+	bool operator!=(ReverseIterator const &iterator) { return !(*this == iterator);}
+
+	// useful utility functions
+	template <typename Y>
+	friend inline void move_it_leftmost(ReverseIterator<Y> *iterator)
+	{
+		while (iterator->ptr->left) iterator->ptr = iterator->ptr->left;
+	}
+	template <typename Y>
+	friend inline void move_it_rightmost(ReverseIterator<Y> *iterator)
+	{
+		while (iterator->ptr->right) iterator->ptr = iterator->ptr->right;
+	}
+	template <typename Y>
+	friend bool iterator_is_left_child(ReverseIterator<Y> *iterator)
+	{
+		if (iterator->ptr == iterator->ptr->parent->left) return true;
+		return false;
+	}
+private:
+	Node<T> *ptr;
+};
+
+template <typename T>
 struct Node {
-	// Useful typedefs
-	typedef T        			value_type;
-	typedef T& 		 			reference;
-	typedef T&&      			rv_reference;
-	typedef T const& 			const_reference;
-	typedef Iterator<T> 		iterator;
-	typedef Iterator<T const>   const_iterator;
+	typedef T        					value_type;
+	typedef T& 		 					reference;
+	typedef T&&      					rv_reference;
+	typedef T const& 					const_reference;
+	typedef Iterator<T> 				iterator;
+	typedef Iterator<T const>   		const_iterator;
+	typedef ReverseIterator<T>  		reverse_iterator;
+	typedef ReverseIterator<T const> 	const_reverse_iterator;
 
 	Node(value_type value)
 		: value(value), left(nullptr), right(nullptr), parent(nullptr), height(0) 
@@ -157,6 +192,8 @@ void delete_replacement(Node<T> **replacement, Node<T> *dangling_branch)
 
 } // namespace util
 
+/* Begin Iterator Methods */
+
 // Go to the next pointer
 template <typename T>
 Iterator<T> &Iterator<T>::operator++()
@@ -216,6 +253,68 @@ typename Iterator<T>::value_type &Iterator<T>::operator*()
 { 
 	return ptr->value; 
 }
+
+/* End Iterator Methods */
+
+/* Begin ReverseIterator Methods */
+
+template <typename T>
+ReverseIterator<T> &ReverseIterator<T>::operator++()
+{
+	if (ptr->left) {
+		ptr = ptr->left;
+		move_it_rightmost(this);
+	} else {
+		while (iterator_is_left_child(this)) ptr = ptr->parent;
+		ptr = ptr->parent;
+	}
+	return *this;
+}
+
+template <typename T>
+ReverseIterator<T> &ReverseIterator<T>::operator--()
+{
+	if (ptr->right) {
+		ptr = ptr->right;
+		move_it_leftmost(this);
+	} else {
+		while (ptr->parent && !iterator_is_left_child(this)) ptr = ptr->parent;
+		ptr = ptr->parent;
+	}
+	return *this;
+}
+
+template <typename T>
+ReverseIterator<T> ReverseIterator<T>::operator++(int)
+{
+	ReverseIterator<T> tmp = *this;
+	++*this;
+	return tmp;
+}
+
+template <typename T>
+ReverseIterator<T> ReverseIterator<T>::operator--(int)
+{
+	ReverseIterator<T> tmp = *this;
+	--*this;
+	return tmp;
+}
+
+template <typename T>
+bool ReverseIterator<T>::operator==(ReverseIterator<T> const& iterator)
+{
+	return ptr == iterator.ptr;
+}
+
+template <typename T>
+typename ReverseIterator<T>::value_type &ReverseIterator<T>::operator*() 
+{ 
+	return ptr->value; 
+}
+
+/* End of ReverseIterator Methods */
+
+/* Begin AVL API */
 
 template <typename T, typename Container>
 void PostOrderTraversal(Node<T> *root, Container &container)
@@ -386,7 +485,7 @@ bool IsTreeBalanced(Node<T> *root)
 	return (bf <= 1 && bf >= -1 && balanced);
 }
 
-// Get an iterator the beginning of the tree
+// Get an iterator to the beginning of the tree
 template <typename T>
 Iterator<T> Begin(Node<T> *root)
 {
@@ -395,11 +494,28 @@ Iterator<T> Begin(Node<T> *root)
 	return it;
 }
 
-// Get the ending iterator, the parameter doesn't do anything
+// Get the ending iterator, the parameter doesn't do anything but provide type information
 template <typename T>
 Iterator<T> End(Node<T> *root)
 {
 	return Iterator<T> {nullptr};
 }
+
+// Get a reverse iterator to the beginning of the tree
+template <typename T>
+ReverseIterator<T> RBegin(Node<T> *root)
+{
+	ReverseIterator<T> it {root};
+	move_it_rightmost(&it);
+	return it;
+}
+
+template <typename T>
+ReverseIterator<T> REnd(Node<T> *root)
+{
+	return ReverseIterator<T> {nullptr};
+}
+
+/* End of AVL API */
 
 } // namespace part2

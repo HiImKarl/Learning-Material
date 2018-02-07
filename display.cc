@@ -1,10 +1,3 @@
-/*
-* @Author: karl
-* @Date:   2018-01-22 20:44:10
-* @Last Modified by:   karl
-* @Last Modified time: 2018-01-29 23:15:18
-*/
-
 #include "part1/AVL.hh"
 #include "part2/AVL.hh"
 #include <queue>
