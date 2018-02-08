@@ -1,12 +1,12 @@
 
 
-.PHONY : all clean
+.PHONY : test display benchmark clean
 
-all : test
-	./test
-	rm test
+test : test_tmp 
+	./test_tmp
+	rm test_tmp
 
-test : test.o 	
+test_tmp : test.o
 	g++ -o $@ $^
 
 test.o : test.cc part1/AVL.hh part2/AVL.hh
@@ -18,11 +18,15 @@ display : display.o
 display.o : display.cc part1/AVL.hh part2/AVL.hh
 	g++ -c -o $@ $<
 
-benchmark : benchmark.o
+benchmark : benchmark_tmp
+	./benchmark_tmp
+	rm benchmark_tmp
+	
+benchmark_tmp : benchmark.o
 	g++ -o $@ $^
 
 benchmark.o : benchmark.cc part2/AVL.hh
 	g++ -c -o $@ $<
 
 clean :
-	rm -f *.o test display benchmark
+	rm -f *.o display 
